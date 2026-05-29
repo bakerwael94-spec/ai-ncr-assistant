@@ -170,7 +170,7 @@ if authentication_status:
 
     menu = st.sidebar.selectbox(
         "Menu",
-        ["Create NCR", "Dashboard"]
+        ["Create NCR", "Field Mode", "Dashboard"]
     )
 
    
@@ -370,6 +370,86 @@ if authentication_status:
 
             # reset AI buffer (optional)
             st.session_state["ai_description"] = ""
+
+    # Build Field Mode UI
+    if menu == "Field Mode":
+
+        st.title("📱 Field NCR Mode (Fast Entry)")
+
+        uploaded_file = st.file_uploader(
+            "Take or Upload Site Photo",
+            type=["png", "jpg", "jpeg"]
+        )
+
+        project = st.text_input("Project")
+
+        location = st.text_input("Location")
+
+        # AI AUTO ANALYSIS (CORE VALUE)
+
+        if uploaded_file and st.button("Generate AI NCR"):
+
+
+            image = Image.open(uploaded_file)
+
+            buffer = io.BytesIO()
+            image.save(buffer, format="PNG")
+
+            base64_image = base64.b64encode(buffer.getvalue()).decode()
+
+            prompt = """
+        You are a construction QA/QC inspector.
+
+        From this image generate:
+        1. Discipline
+        2. Defect type
+        3. NCR description
+        4. Root cause
+        5. Corrective action
+        Return structured text.
+        """
+
+            response = client.chat.completions.create(
+                model="gpt-4.1-mini",
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {
+                            "url": f"data:image/png;base64,{base64_image}"
+                        }}
+                    ]
+                }]
+            )
+
+            ai_output = response.choices[0].message.content
+
+            st.session_state.ai_output = ai_output
+
+            st.success("AI NCR Generated")
+
+        # SHOW RESULT + CONFIRM BUTTON
+
+        if "ai_output" in st.session_state:
+
+            st.subheader("🧠 AI Suggested NCR")
+
+            st.write(st.session_state.ai_output)
+
+            if st.button("Save NCR"):
+
+                new_ncr = NCR(
+                    project=project,
+                    location=location,
+                    discipline="Auto",
+                    description=st.session_state.ai_output,
+                    status="Open"
+                )
+
+                db.add(new_ncr)
+                db.commit()
+
+                st.success("NCR Saved Successfully!")
         
 
 
