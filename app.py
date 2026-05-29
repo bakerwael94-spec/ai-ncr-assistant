@@ -119,19 +119,26 @@ def send_email(subject, body, to_email):
 # --------------------------------
 # AUTHENTICATION
 # --------------------------------
-
 credentials = {
     "usernames": {
-        "qa": {
-            "name": "QA Engineer",
-            "password": "1234"
+        "engineer1": {
+            "name": "Site Engineer",
+            "password": "1234",
+            "role": "engineer"
         },
-        "pm": {
-            "name": "Project Manager",
-            "password": "1234"
+        "qa1": {
+            "name": "QA Manager",
+            "password": "1234",
+            "role": "qa"
+        },
+        "admin": {
+            "name": "Admin",
+            "password": "1234",
+            "role": "admin"
         }
     }
 }
+
 
 ## Create Authenticator
 
@@ -148,6 +155,8 @@ name = st.session_state.get("name")
 authentication_status = st.session_state.get("authentication_status")
 username = st.session_state.get("username")
 
+
+
 ## Add Session State Variables
 
 if "ai_generated_text" not in st.session_state:
@@ -162,8 +171,47 @@ if "ai_discipline" not in st.session_state:
 
 if authentication_status:
 
+    ## Capture Role After Login
+
+    role = credentials["usernames"][username]["role"]
+
+    ## Role-Based UI Control
+
+    # 👷 Engineer View
+
+    if role == "engineer":
+
+        st.subheader("📱 Field NCR Mode")
+
+        st.info("Engineer Mode: You can create NCRs only")
+
+    # 🧠 QA Manager View
+
+    elif role == "qa":
+
+        st.subheader("📊 QA Dashboard")
+
+        st.info("QA Mode: You can review and approve NCRs")
+
+    # 🛠 Admin View
+
+    elif role == "admin":
+
+        st.subheader("⚙ Admin Control Panel")
+
+        st.info("Full system access")
+
+
+
     authenticator.logout("Logout", "sidebar")
     st.sidebar.success(f"Welcome {name}")
+
+    ## Basic Usage Tracking (Foundation for Paid Plans)
+
+    if "ncr_count" not in st.session_state:
+        st.session_state.ncr_count = 0
+
+    st.sidebar.metric("NCRs Created (Session)", st.session_state.ncr_count)
 
 
     st.title("🏗 AI-Powered NCR Assistant")
@@ -186,6 +234,8 @@ if authentication_status:
         st.subheader("Create New NCR")
 
         company = st.text_input("Company Name")
+
+        st.session_state.ncr_count += 1
 
         # -----------------------------
         # BASIC NCR FIELDS
@@ -680,21 +730,43 @@ if authentication_status:
         # 6. Add Approval Section in Dashboard
         # ----------------------------
 
-        st.subheader("✅ Approval Workflow")
+        if role in ["qa", "admin"]:
 
-        approval_comment = st.text_area(
-            "Approval Comment"
-        )
+            st.subheader("✅ Approval Workflow")
 
-        approver_name = st.text_input(
-            "Approver Name"
-        )
+            approval_comment = st.text_area(
+                "Approval Comment"
+            )
 
-        approval_status = st.selectbox(
-            "Approval Decision",
-            ["Approved", "Rejected", "Closed"]
-        )
+            approver_name = st.text_input(
+                "Approver Name"
+            )
 
+            approval_status = st.selectbox(
+                "Approval Decision",
+                ["Approved", "Rejected", "Closed"]
+            )
+
+
+            if st.button("Submit Approval"):
+
+                ncr = db.query(NCR).filter(NCR.id == selected_id).first()
+
+                if ncr:
+
+                    ncr.status = approval_status
+                    ncr.approver = approver_name
+                    ncr.approval_comment = approval_comment
+
+                    db.commit()
+
+                    st.success("Approval Updated Successfully!")
+
+        else:
+
+            st.warning("You do not have permission to approve NCRs")
+
+    
         # ----------------------------
         # 6. Save Approval
         # ----------------------------
