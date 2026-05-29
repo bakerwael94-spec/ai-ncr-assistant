@@ -17,7 +17,7 @@ from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-
+PILOT_MODE = True
     
 # --------------------------------
 # PAGE CONFIG
@@ -376,14 +376,9 @@ if authentication_status:
 
         st.title("📱 Field NCR Mode (Fast Entry)")
 
-        uploaded_file = st.file_uploader(
-            "Take or Upload Site Photo",
-            type=["png", "jpg", "jpeg"]
-        )
-
         project = st.text_input("Project")
-
         location = st.text_input("Location")
+        uploaded_file = st.file_uploader("Photo", type=["jpg", "png", "jpeg"])
 
         # AI AUTO ANALYSIS (CORE VALUE)
 
@@ -428,6 +423,15 @@ if authentication_status:
 
             st.success("AI NCR Generated")
 
+        # Add “One Click Submit NCR”
+
+        if st.button("🚀 Submit NCR (Auto AI)"):
+
+            if uploaded_file is None:
+                st.error("Please upload a photo")
+            else:
+                st.success("Processing NCR...")
+
         # SHOW RESULT + CONFIRM BUTTON
 
         if "ai_output" in st.session_state:
@@ -435,6 +439,8 @@ if authentication_status:
             st.subheader("🧠 AI Suggested NCR")
 
             st.write(st.session_state.ai_output)
+            # FEEDBACK
+            feedback = st.text_area("Optional Feedback (for improvement)")
 
             if st.button("Save NCR"):
 
@@ -448,6 +454,7 @@ if authentication_status:
 
                 db.add(new_ncr)
                 db.commit()
+                st.session_state.last_feedback = feedback
 
                 st.success("NCR Saved Successfully!")
         
