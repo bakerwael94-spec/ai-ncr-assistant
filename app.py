@@ -30,9 +30,7 @@ st.set_page_config(
 # --------------------------------
 # OPENAI CLIENT
 # --------------------------------
-client = OpenAI(
-        api_key="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"
-    )
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # --------------------------------
 # DATABASE SESSION
