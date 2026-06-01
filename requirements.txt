@@ -1,9 +1,0 @@
-streamlit
-pandas
-sqlalchemy
-openai
-matplotlib
-reportlab
-streamlit-authenticator
-pillow
-bcrypt
