@@ -21,10 +21,7 @@ def show_create_ncr(db, username):
     if "ai_discipline" not in st.session_state:
         st.session_state.ai_discipline = "Civil"
 
-    # Add Email Field in Create NCR
-    notification_email = st.text_input(
-        "Notification Email"
-    )
+    
 
     st.subheader("Create New NCR")
 
@@ -38,6 +35,13 @@ def show_create_ncr(db, username):
 
     project = st.text_input("Project Name")
     location = st.text_input("Location")
+
+    # Add Email Field in Create NCR
+    notification_email = st.text_input(
+        "Notification Email"
+    )
+
+    
     discipline_options = ["Civil", "Architectural", "MEP"]
 
     default_index = discipline_options.index(
@@ -162,16 +166,13 @@ def show_create_ncr(db, username):
         Status: Open
         """
 
-        if notification_email:
+        email_sent = None
 
-            email_sent = send_email(
-                email_subject,
-                email_body,
-                notification_email
-        )
+        if notification_email.strip():
+            email_sent = send_email(email_subject, email_body, notification_email)
 
-        if email_sent:
-            st.success("Email notification sent!")
+            if email_sent:
+                st.success("Email notification sent!")
                 
 
         st.success("✅ NCR Saved Successfully!")
