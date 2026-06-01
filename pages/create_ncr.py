@@ -21,7 +21,10 @@ def show_create_ncr(db, username):
     if "ai_discipline" not in st.session_state:
         st.session_state.ai_discipline = "Civil"
 
-    
+    # Add Email Field in Create NCR
+    notification_email = st.text_input(
+        "Notification Email"
+    )
 
     st.subheader("Create New NCR")
 
@@ -36,10 +39,7 @@ def show_create_ncr(db, username):
     project = st.text_input("Project Name")
     location = st.text_input("Location")
 
-    # Add Email Field in Create NCR
-    notification_email = st.text_input(
-        "Notification Email"
-    )
+    
 
     
     discipline_options = ["Civil", "Architectural", "MEP"]
