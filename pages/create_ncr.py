@@ -169,7 +169,7 @@ def show_create_ncr(db, username):
 
 
 
-        email_sent = None
+        #email_sent = None
 
         if notification_email and notification_email.strip():
             email_sent = send_email(email_subject, email_body, notification_email)
