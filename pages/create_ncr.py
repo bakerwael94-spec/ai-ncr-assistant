@@ -166,13 +166,17 @@ def show_create_ncr(db, username):
         Status: Open
         """
 
+
+
+
         email_sent = None
 
-        if notification_email.strip():
+        if notification_email and notification_email.strip():
             email_sent = send_email(email_subject, email_body, notification_email)
 
             if email_sent:
                 st.success("Email notification sent!")
+
                 
 
         st.success("✅ NCR Saved Successfully!")
